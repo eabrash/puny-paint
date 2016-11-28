@@ -68,22 +68,22 @@ void drawBackground(int *pPixels, int len)
 
 void drawTools(int *pPixelsStart, int len)
 {
-    SDL_Surface* pBrushIcon = IMG_Load("../../../../../../../../Documents/flood-fill/resources/brush.png");
-    SDL_Surface* pBucketIcon = IMG_Load("../../../../../../../../Documents/flood-fill/resources/paintbucket.png");
-    SDL_Surface* pRed = IMG_Load("../../../../../../../../Documents/flood-fill/resources/red.png");
-    SDL_Surface* pOrange = IMG_Load("../../../../../../../../Documents/flood-fill/resources/orange.png");
-    SDL_Surface* pYellow = IMG_Load("../../../../../../../../Documents/flood-fill/resources/yellow.png");
-    SDL_Surface* pGreen = IMG_Load("../../../../../../../../Documents/flood-fill/resources/green.png");
-    SDL_Surface* pBlue = IMG_Load("../../../../../../../../Documents/flood-fill/resources/blue.png");
-    SDL_Surface* pPurple = IMG_Load("../../../../../../../../Documents/flood-fill/resources/purple.png");
-    SDL_Surface* pBlack = IMG_Load("../../../../../../../../Documents/flood-fill/resources/black.png");
-    SDL_Surface* pGray = IMG_Load("../../../../../../../../Documents/flood-fill/resources/gray.png");
-    SDL_Surface* pWhite = IMG_Load("../../../../../../../../Documents/flood-fill/resources/white.png");
-    SDL_Surface* pPink = IMG_Load("../../../../../../../../Documents/flood-fill/resources/pink.png");
-    SDL_Surface* pSand = IMG_Load("../../../../../../../../Documents/flood-fill/resources/sand.png");
-    SDL_Surface* pBrown = IMG_Load("../../../../../../../../Documents/flood-fill/resources/brown.png");
-    SDL_Surface* pRaspberry = IMG_Load("../../../../../../../../Documents/flood-fill/resources/raspberry.png");
-    SDL_Surface* pMidnightBlue = IMG_Load("../../../../../../../../Documents/flood-fill/resources/midnight_blue.png");
+    SDL_Surface* pBrushIcon = IMG_Load("../../../../../../../../Documents/puny-paint/resources/brush.png");
+    SDL_Surface* pBucketIcon = IMG_Load("../../../../../../../../Documents/puny-paint/resources/paintbucket.png");
+    SDL_Surface* pRed = IMG_Load("../../../../../../../../Documents/puny-paint/resources/red.png");
+    SDL_Surface* pOrange = IMG_Load("../../../../../../../../Documents/puny-paint/resources/orange.png");
+    SDL_Surface* pYellow = IMG_Load("../../../../../../../../Documents/puny-paint/resources/yellow.png");
+    SDL_Surface* pGreen = IMG_Load("../../../../../../../../Documents/puny-paint/resources/green.png");
+    SDL_Surface* pBlue = IMG_Load("../../../../../../../../Documents/puny-paint/resources/blue.png");
+    SDL_Surface* pPurple = IMG_Load("../../../../../../../../Documents/puny-paint/resources/purple.png");
+    SDL_Surface* pBlack = IMG_Load("../../../../../../../../Documents/puny-paint/resources/black.png");
+    SDL_Surface* pGray = IMG_Load("../../../../../../../../Documents/puny-paint/resources/gray.png");
+    SDL_Surface* pWhite = IMG_Load("../../../../../../../../Documents/puny-paint/resources/white.png");
+    SDL_Surface* pPink = IMG_Load("../../../../../../../../Documents/puny-paint/resources/pink.png");
+    SDL_Surface* pSand = IMG_Load("../../../../../../../../Documents/puny-paint/resources/sand.png");
+    SDL_Surface* pBrown = IMG_Load("../../../../../../../../Documents/puny-paint/resources/brown.png");
+    SDL_Surface* pRaspberry = IMG_Load("../../../../../../../../Documents/puny-paint/resources/raspberry.png");
+    SDL_Surface* pMidnightBlue = IMG_Load("../../../../../../../../Documents/puny-paint/resources/midnight_blue.png");
     
     int *brush = (int *)pBrushIcon->pixels;
     int *bucket = (int *)pBucketIcon->pixels;

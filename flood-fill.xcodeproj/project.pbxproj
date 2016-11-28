@@ -143,8 +143,9 @@
 				379E18E91DE5697400C7BC59 /* white.png */,
 				379E18EA1DE5697400C7BC59 /* yellow.png */,
 			);
-			path = resources;
-			sourceTree = "<group>";
+			name = resources;
+			path = "../../../../../../../../Documents/puny-paint/resources";
+			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXGroup section */
 

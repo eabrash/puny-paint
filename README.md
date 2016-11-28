@@ -14,7 +14,7 @@ PunyPaint started life as a flood fill algorithm written for the command line. I
 
 3. **Option 1:** Run the pre-built executable.
 
- Go into the "Executable Version" folder of the repo and either double-click the flood-fill executable file (in Finder)) or run $ open flood-fill in the command line. PunyPaint should open. If you do not see a paint program-like window opening and see an error saying "Library not loaded," please make sure that you have both SDL2 and SDL2_image libraries installed according to the instructions in the above links.
+ Go into the "Executable Version" folder of the repo and either double-click the flood-fill executable file (in Finder) or run $ open flood-fill in the command line. PunyPaint should open. If you do not see a paint program-like window opening and see an error saying "Library not loaded," please make sure that you have both SDL2 and SDL2_image libraries installed according to the instructions in the above links.
 
 4. **Option 2:** Open Xcode and peruse the code, then do the build yourself.
 

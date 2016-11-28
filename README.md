@@ -3,7 +3,7 @@
 PunyPaint started life as a flood fill algorithm written for the command line. It's gradually developed into a flood fill implementation using SDL in which you can also draw lines and select colors - a kind of miniature paint program. PunyPaint has a long (_long_) way to go before it's going to displace real paint programs, but it's a great sandbox for graphical display and interaction using C++ and SDL.
 
 
-![Screenshot of PunyPaint in action, featuring drawing of a flower](https://eabrash.github.io/assets/punypaint.png)
+![Screenshot of PunyPaint in action, featuring drawing of a flower](https://eabrash.github.io/assets/punypaint_small.png)
 
 
 ##How to run PunyPaint:

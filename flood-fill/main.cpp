@@ -302,6 +302,42 @@ int setColor (SDL_MouseButtonEvent mEvent, int *pPixels, int canvasSideLength)
     }
 }
 
+// Draw a box around the selected tool or color tile
+
+void giveFocus (int xStart, int *pPixels, int len)
+{
+    int tileLength = 25;
+    
+    for (int x = xStart; x < xStart + tileLength; x++)
+    {
+        for (int y = 0; y < tileLength; y++)
+        {
+            if (y == 0 || y == tileLength-1 || x == xStart || x == xStart + tileLength -1)
+            {
+                pPixels[(len+y)*len+x] = 0x00FF4500;
+            }
+        }
+    }
+}
+
+// Overwrite an existing box by returning pixels to the gray of the border
+
+void removeFocus (int xStart, int *pPixels, int len)
+{
+    int tileLength = 25;
+    
+    for (int x = xStart; x < xStart + tileLength; x++)
+    {
+        for (int y = 0; y < tileLength; y++)
+        {
+            if (y == 0 || y == tileLength-1 || x == xStart || x == xStart + tileLength -1)
+            {
+                pPixels[(len+y)*len+x] = 0x00A9A9A9;
+            }
+        }
+    }
+}
+
 
 // Main program loop - sets up the canvas and detects and handles user events
 
@@ -326,9 +362,14 @@ int main(int argc, const char * argv[]) {
     
     bool buttonPressed = false;
     bool pencil = true;     // When pencil is false, program is in paintbucket mode
+    int toolFocusX = 0;
+    giveFocus(toolFocusX, pPixels, canvasSideLength);
     
     int fillColor = 0x00ffffff;
+    int fillColorFocusX = 250;
     int lineColor = 0x00000000;
+    int fillLineFocusX = 200;
+    giveFocus(fillLineFocusX, pPixels, canvasSideLength);
     
     int lastXCoord = 0;
     int lastYCoord = 0;
@@ -353,6 +394,8 @@ int main(int argc, const char * argv[]) {
                         SDL_CaptureMouse(SDL_TRUE); // Allows tracking of mouse outside of window
                         lastXCoord = mEvent.x;
                         lastYCoord = mEvent.y;
+                        removeFocus(25, pPixels, canvasSideLength);
+                        toolFocusX = 25;
                     }
                     else
                     {

@@ -12,46 +12,35 @@
 #include <iostream>
 #include <sstream>
 
-// Recursive flood-fill algorithm
 
-void floodfill(int *pPixels, int y, int x, int len, int original_color, int new_color)
+// Initialize video and create a window, returning the window
+
+SDL_Window * setUpWindow(int canvasSideLength)
 {
-    if (original_color != new_color)
-    {
-        if (*(pPixels+(y*len)+x) == original_color)
-        {
-            *(pPixels+(y*len)+x) = new_color;
-        
-            if (y+1 < len)
-            {
-                floodfill(pPixels, y+1, x, len, original_color, new_color);
-            }
-            
-            if (y-1 >= 0)
-            {
-                floodfill(pPixels, y-1, x, len, original_color, new_color);
-            }
-
-            if (x+1 < len)
-            {
-                floodfill(pPixels, y, x+1, len, original_color, new_color);
-            }
-
-            if (x-1 >= 0)
-            {
-                floodfill(pPixels, y, x-1, len, original_color, new_color);
-            }
-        }
+    std::string windowTitle = "PunyPaint";
+    
+    // Initialize the video
+    
+    int initializationResult = SDL_Init(SDL_INIT_VIDEO);
+    
+    if (initializationResult == -1){
+        std::cout << "There was an error";
+        exit(-1);
     }
+    
+    // Initialize the window
+    
+    SDL_Window *pDisplay = SDL_CreateWindow(windowTitle.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, canvasSideLength, canvasSideLength+25, SDL_WINDOW_SHOWN);
+    
+    if (pDisplay == NULL)
+    {
+        std::cout << "There was a problem setting the display";
+        exit(-1);
+    }
+    
+    return pDisplay;
 }
 
-// Wrapper for recursive flood-fill algorithm (identifies and sets initial color)
-
-void fillWithPaint(int *pPixels, int x, int y, int len, int new_color)
-{
-    int original_color = *(pPixels+(y*len)+x);
-    floodfill(pPixels, y, x, len, original_color, new_color);
-}
 
 // Give all pixels a color of white to make a new drawing canvas
 
@@ -68,6 +57,7 @@ void drawBackground(int *pPixels, int len)
     }
     
 }
+
 
 // Load tool selectors and color swatches
 
@@ -185,6 +175,7 @@ void drawTools(int *pPixelsStart, int len)
     }
 }
 
+
 // Draw a 3 by 3 dot when the user clicks
 
 void setPixel(int x_coord, int y_coord, int * pPixels, int len, int lineColor)
@@ -207,7 +198,8 @@ void setPixel(int x_coord, int y_coord, int * pPixels, int len, int lineColor)
     }
 }
 
-// Draw a line between two points, using the pixel array pointer
+
+// Draw a line between two points
 
 void drawLine(int lastXCoord, int lastYCoord, int currentXCoord, int currentYCoord, int *pPixels, int len, int lineColor)
 {
@@ -215,7 +207,7 @@ void drawLine(int lastXCoord, int lastYCoord, int currentXCoord, int currentYCoo
     
     if (isVertical) // Draw a vertical line (slope is undefined)
     {
-        for (int y = std::min(lastYCoord, currentYCoord) + 1; y < std::max(currentYCoord, lastYCoord); y++)
+        for (int y = std::min(lastYCoord, currentYCoord); y < std::max(currentYCoord, lastYCoord); y++)
         {
             setPixel(currentXCoord, y, pPixels, len, lineColor);
         }
@@ -227,7 +219,7 @@ void drawLine(int lastXCoord, int lastYCoord, int currentXCoord, int currentYCoo
         
         if (slope >= 1 || slope <= -1) // Need to go through each y pixel and draw corresponding x
             {
-            for (int y = std::min(currentYCoord, lastYCoord) + 1; y < std::max(lastYCoord, currentYCoord); y++)
+            for (int y = std::min(currentYCoord, lastYCoord); y < std::max(lastYCoord, currentYCoord); y++)
             {
                 int x = round((y-intercept)/slope);
                 setPixel(x, y, pPixels, len, lineColor);
@@ -235,7 +227,7 @@ void drawLine(int lastXCoord, int lastYCoord, int currentXCoord, int currentYCoo
         }
         else    // Need to go through each x pixel and draw corresponding y
         {
-            for (int x = std::min(currentXCoord, lastXCoord) + 1; x <= std::max(currentXCoord, lastXCoord); x++)
+            for (int x = std::min(currentXCoord, lastXCoord); x <= std::max(currentXCoord, lastXCoord); x++)
             {
                 int y = round(slope * x + intercept);
                 setPixel(x, y, pPixels, len, lineColor);
@@ -244,7 +236,51 @@ void drawLine(int lastXCoord, int lastYCoord, int currentXCoord, int currentYCoo
     }
 }
 
-// Set color based on position of user's click on palette
+
+// Recursive flood-fill algorithm
+
+void floodfill(int *pPixels, int y, int x, int len, int original_color, int new_color)
+{
+    if (original_color != new_color)
+    {
+        if (*(pPixels+(y*len)+x) == original_color)
+        {
+            *(pPixels+(y*len)+x) = new_color;
+            
+            if (y+1 < len)
+            {
+                floodfill(pPixels, y+1, x, len, original_color, new_color);
+            }
+            
+            if (y-1 >= 0)
+            {
+                floodfill(pPixels, y-1, x, len, original_color, new_color);
+            }
+            
+            if (x+1 < len)
+            {
+                floodfill(pPixels, y, x+1, len, original_color, new_color);
+            }
+            
+            if (x-1 >= 0)
+            {
+                floodfill(pPixels, y, x-1, len, original_color, new_color);
+            }
+        }
+    }
+}
+
+
+// Wrapper for recursive flood-fill algorithm (identify and set initial color)
+
+void fillWithPaint(int *pPixels, int x, int y, int len, int new_color)
+{
+    int original_color = *(pPixels+(y*len)+x);
+    floodfill(pPixels, y, x, len, original_color, new_color);
+}
+
+
+// Set pencil or paint bucket color based on position of user's click on palette
 
 int setColor (SDL_MouseButtonEvent mEvent, int *pPixels, int canvasSideLength)
 {
@@ -269,33 +305,8 @@ int main(int argc, const char * argv[]) {
     
     int canvasSideLength = 400;     // Side length of canvas - canvas is square
     
-    SDL_Window *pDisplay = NULL;    // Initialize pointers to be null (thanks to Michael Gray for this tip)
-    SDL_Surface *pSurface = NULL;
-    
-    std::string windowTitle = "PunyPaint";
-    
-    // Initialize the video
-    
-    int initializationResult = SDL_Init(SDL_INIT_VIDEO);
-    
-    if (initializationResult == -1){
-        std::cout << "There was an error";
-        exit(-1);
-    }
-    
-    // Initialize the window
-    
-    pDisplay = SDL_CreateWindow(windowTitle.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, canvasSideLength, canvasSideLength+25, SDL_WINDOW_SHOWN);
-    
-    if (pDisplay == NULL)
-    {
-        std::cout << "There was a problem setting the display";
-        exit(-1);
-    }
-    
-    // Get the surface and its pixels from the window so it can be drawn to
-    
-    pSurface = SDL_GetWindowSurface(pDisplay);
+    SDL_Window *pDisplay = setUpWindow(canvasSideLength);
+    SDL_Surface *pSurface = SDL_GetWindowSurface(pDisplay);
     int *pPixels = (int *)pSurface->pixels;
     
     // Draw the white canvas background and the tool tray
@@ -315,8 +326,8 @@ int main(int argc, const char * argv[]) {
     int fillColor = 0x00ffffff;
     int lineColor = 0x00000000;
     
-    int lastXCoord;
-    int lastYCoord;
+    int lastXCoord = 0;
+    int lastYCoord = 0;
     
     while (running)
     {
@@ -335,6 +346,7 @@ int main(int argc, const char * argv[]) {
                     {
                         setPixel(mEvent.x, mEvent.y, pPixels, canvasSideLength, lineColor);
                         buttonPressed = true;
+                        SDL_CaptureMouse(SDL_TRUE); // Allows tracking of mouse outside of window
                         lastXCoord = mEvent.x;
                         lastYCoord = mEvent.y;
                     }
@@ -366,32 +378,20 @@ int main(int argc, const char * argv[]) {
                     }
                 }
             }
-            else if (event.type == SDL_MOUSEBUTTONUP)
+            else if (buttonPressed && event.type == SDL_MOUSEBUTTONUP)
             {
-                if(pencil && buttonPressed)
-                {
-                    buttonPressed = false;
-                    SDL_MouseButtonEvent mEvent = *(SDL_MouseButtonEvent *)&event;
-                    setPixel(mEvent.x, mEvent.y, pPixels, canvasSideLength, lineColor);
-                    if (mEvent.x != lastXCoord || mEvent.y != lastYCoord)
-                    {
-                        drawLine(lastXCoord, lastYCoord, mEvent.x, mEvent.y, pPixels, canvasSideLength, lineColor);
-                    }
-                }
+                buttonPressed = false;
+                SDL_CaptureMouse(SDL_FALSE);
+                SDL_MouseButtonEvent mEvent = *(SDL_MouseButtonEvent *)&event;
+                drawLine(lastXCoord, lastYCoord, mEvent.x, mEvent.y, pPixels, canvasSideLength, lineColor);
             }
             else if (buttonPressed && event.type == SDL_MOUSEMOTION)
             {
-                if(pencil)
-                {
-                    SDL_MouseMotionEvent mEvent = *(SDL_MouseMotionEvent *)&event;
-                    setPixel(mEvent.x, mEvent.y, pPixels, canvasSideLength, lineColor);
-                    if (mEvent.x != lastXCoord || mEvent.y != lastYCoord)
-                    {
-                        drawLine(lastXCoord, lastYCoord, mEvent.x, mEvent.y, pPixels, canvasSideLength, lineColor);
-                        lastXCoord = mEvent.x;
-                        lastYCoord = mEvent.y;
-                    }
-                }
+                SDL_MouseMotionEvent mEvent = *(SDL_MouseMotionEvent *)&event;
+                drawLine(lastXCoord, lastYCoord, mEvent.x, mEvent.y, pPixels, canvasSideLength, lineColor);
+                lastXCoord = mEvent.x;
+                lastYCoord = mEvent.y;
+//                std::cout << mEvent.x << ", " << mEvent.y << "\n";
             }
             SDL_UpdateWindowSurface(pDisplay);
         }

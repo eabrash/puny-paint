@@ -386,7 +386,7 @@ int main(int argc, const char * argv[]) {
             }
             else if (event.type == SDL_MOUSEBUTTONUP)
             {
-                if(pencil)
+                if(pencil && buttonPressed)
                 {
                     buttonPressed = false;
                     SDL_MouseButtonEvent mEvent = *(SDL_MouseButtonEvent *)&event;

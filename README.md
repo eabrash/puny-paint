@@ -22,14 +22,16 @@ PunyPaint started life as a flood fill algorithm written for the command line. I
 
 If you get errors that are not fixed by installation of SDL2 or SDL2_image or by edits to the image paths, please [email me](mailto:emabrash@gmail.com) and I will try to figure out and fix the problem.
 
-##Why doesn't it do X?
+##Why doesn't it do [X]?
 
 There is a lot that PunyPaint doesn't do...yet!
 
 [TODO] Known issues/upcoming tasks:
-* Add undo capability
-* Make lines "non-dotted" (continuous) when mouse is moving fast
+* Add undo functionality
 * Highlight current tool and color selection
+* Allow zooming in and out
+* Add copy/paste functionality
+* Add save functionality
 
 ##How can I learn to use SDL2?
 

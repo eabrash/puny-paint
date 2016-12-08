@@ -12,6 +12,7 @@
 #include <iostream>
 #include <sstream>
 
+// Recursive flood-fill algorithm
 
 void floodfill(int *pPixels, int y, int x, int len, int original_color, int new_color)
 {
@@ -44,13 +45,15 @@ void floodfill(int *pPixels, int y, int x, int len, int original_color, int new_
     }
 }
 
-void paint(int *pPixels, int x, int y, int len, int new_color)
+// Wrapper for recursive flood-fill algorithm (identifies and sets initial color)
+
+void fillWithPaint(int *pPixels, int x, int y, int len, int new_color)
 {
     int original_color = *(pPixels+(y*len)+x);
     floodfill(pPixels, y, x, len, original_color, new_color);
 }
 
-// Fill the background with its color
+// Give all pixels a color of white to make a new drawing canvas
 
 void drawBackground(int *pPixels, int len)
 {
@@ -66,8 +69,12 @@ void drawBackground(int *pPixels, int len)
     
 }
 
+// Load tool selectors and color swatches
+
 void drawTools(int *pPixelsStart, int len)
 {
+    // Load small PNG images representing tools and color options
+    
     SDL_Surface* pBrushIcon = IMG_Load("../../../../../../../../Documents/puny-paint/resources/brush.png");
     SDL_Surface* pBucketIcon = IMG_Load("../../../../../../../../Documents/puny-paint/resources/paintbucket.png");
     SDL_Surface* pRed = IMG_Load("../../../../../../../../Documents/puny-paint/resources/red.png");
@@ -85,6 +92,8 @@ void drawTools(int *pPixelsStart, int len)
     SDL_Surface* pRaspberry = IMG_Load("../../../../../../../../Documents/puny-paint/resources/raspberry.png");
     SDL_Surface* pMidnightBlue = IMG_Load("../../../../../../../../Documents/puny-paint/resources/midnight_blue.png");
     
+    // For each small loaded image, get a pointer to its pixel array
+    
     int *brush = (int *)pBrushIcon->pixels;
     int *bucket = (int *)pBucketIcon->pixels;
     int *red = (int *)pRed->pixels;
@@ -101,6 +110,8 @@ void drawTools(int *pPixelsStart, int len)
     int *brown = (int *)pBrown->pixels;
     int *raspberry = (int *)pRaspberry->pixels;
     int *midnightBlue = (int *)pMidnightBlue->pixels;
+    
+    // Draw each tool or color's "postage stamp" to the reigon of the tray at the bottom of the window
     
     for (int i = 0; i < 25; i++)
     {
@@ -174,41 +185,74 @@ void drawTools(int *pPixelsStart, int len)
     }
 }
 
-// Drawing a dot
+// Draw a 3px by 3px dot when the user clicks
 
-void setPixel(int x, int y, int * pPixels, int len, SDL_Window * window, int lineColor)
+void setPixel(int x_coord, int y_coord, int * pPixels, int len, int lineColor)
 {
-    int xStart = std::max(x-1, 0);
-    int xEnd = std::min(x+1, len-1);
-    int yEnd = std::min(len-1, y+1);
-    int yStart = std::max(y-1, 0);
+    // Define the box that will be filled by the click (may be smaller than 3px by 3px if at canvas edge)
     
-    for(int xx = xStart; xx <= xEnd; xx++)
+    int xStart = std::max(x_coord-1, 0);
+    int xEnd = std::min(x_coord+1, len-1);
+    int yEnd = std::min(len-1, y_coord+1);
+    int yStart = std::max(y_coord-1, 0);
+    
+    // Fill in the box with the line color
+    
+    for(int x = xStart; x <= xEnd; x++)
     {
-        for(int yy = yStart; yy <= yEnd; yy++)
+        for(int y = yStart; y <= yEnd; y++)
         {
-            *(pPixels+(yy)*len+(xx))=lineColor;
+            *(pPixels+(y)*len+(x))=lineColor;
         }
     }
+}
+
+// Draw a line between two points, using the pixel array pointer
+
+void drawLine(int lastXCoord, int lastYCoord, int currentXCoord, int currentYCoord, int *pPixels, int len, int lineColor)
+{
+    bool isVertical = currentXCoord - lastXCoord == 0;
     
-    SDL_Rect rects[1];
-    SDL_Rect rect;
-    rect.x = xStart;
-    rect.y = yStart;
-    rect.w = 3;
-    rect.h = 3;
-    rects[0] = rect;
-    
-    SDL_UpdateWindowSurfaceRects(window, rects, 1);
+    if (isVertical) // Draw a vertical line (slope is undefined)
+    {
+        for (int y = std::min(lastYCoord, currentYCoord) + 1; y < std::max(currentYCoord, lastYCoord); y++)
+        {
+            setPixel(currentXCoord, y, pPixels, len, lineColor);
+        }
+    }
+    else    // Determine slope and intercept of line and use to color in the appropriate set of pixels
+    {
+        float slope = float((currentYCoord - lastYCoord))/float((currentXCoord - lastXCoord));
+        float intercept = currentYCoord-(slope*currentXCoord);
+        
+        if (slope >= 1 || slope <= -1) // Need to go through each y pixel and draw corresponding x
+            {
+            for (int y = std::min(currentYCoord, lastYCoord) + 1; y < std::max(lastYCoord, currentYCoord); y++)
+            {
+                int x = round((y-intercept)/slope);
+                setPixel(x, y, pPixels, len, lineColor);
+            }
+        }
+        else    // Need to go through each x pixel and draw corresponding y
+        {
+            for (int x = std::min(currentXCoord, lastXCoord) + 1; x <= std::max(currentXCoord, lastXCoord); x++)
+            {
+                int y = round(slope * x + intercept);
+                setPixel(x, y, pPixels, len, lineColor);
+            }
+        }
+    }
 }
 
 
+// Main program loop - sets up the canvas and detects and handles user events
+
 int main(int argc, const char * argv[]) {
     
-    int myArrayLength = 400;                //Actual size of desired grid (side length)
+    int canvasSideLength = 400;     // Side length of canvas - canvas is square
     
-    SDL_Window *pDisplay;
-    SDL_Surface *pSurface;
+    SDL_Window *pDisplay = NULL;    // Initialize pointers to be null (thanks to Michael Gray for this tip)
+    SDL_Surface *pSurface = NULL;
     
     std::string windowTitle = "PunyPaint";
     
@@ -223,8 +267,7 @@ int main(int argc, const char * argv[]) {
     
     // Initialize the window
     
-    
-    pDisplay = SDL_CreateWindow(windowTitle.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, myArrayLength, myArrayLength+25, SDL_WINDOW_SHOWN);
+    pDisplay = SDL_CreateWindow(windowTitle.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, canvasSideLength, canvasSideLength+25, SDL_WINDOW_SHOWN);
     
     if (pDisplay == NULL)
     {
@@ -237,22 +280,25 @@ int main(int argc, const char * argv[]) {
     pSurface = SDL_GetWindowSurface(pDisplay);
     int *pPixels = (int *)pSurface->pixels;
     
-    // Populate board with first generation and display it
+    // Draw the white canvas background and the tool tray
     
-    drawBackground(pPixels, myArrayLength);
-    drawTools(pPixels, myArrayLength);
+    drawBackground(pPixels, canvasSideLength);
+    drawTools(pPixels, canvasSideLength);
     SDL_UpdateWindowSurface(pDisplay);
     
     // Event handling loop (below) based on Lazy Foo SDL Tutorial 03
+    
     SDL_Event event;
     bool running = true;
     
-    // Update board and display each new generation
-    
     bool buttonPressed = false;
-    bool pencil = true;
+    bool pencil = true;     // When pencil is false, program is in paintbucket mode
+    
     int fillColor = 0x00ffffff;
     int lineColor = 0x00000000;
+    
+    int lastXCoord;
+    int lastYCoord;
     
     while (running)
     {
@@ -265,28 +311,29 @@ int main(int argc, const char * argv[]) {
             else if (event.type == SDL_MOUSEBUTTONDOWN)
             {
                 SDL_MouseButtonEvent mEvent = *(SDL_MouseButtonEvent *)&event;
-                if (mEvent.y < myArrayLength)
+                if (mEvent.y < canvasSideLength)    // Click occurred on the main canvas - user is drawing
                 {
                     if(pencil)
                     {
-                        setPixel(mEvent.x, mEvent.y, pPixels, myArrayLength, pDisplay, lineColor);
+                        setPixel(mEvent.x, mEvent.y, pPixels, canvasSideLength, lineColor);
                         buttonPressed = true;
+                        lastXCoord = mEvent.x;
+                        lastYCoord = mEvent.y;
                     }
                     else
                     {
-                        paint(pPixels, mEvent.x, mEvent.y, myArrayLength, fillColor);
-                        SDL_UpdateWindowSurface(pDisplay);
+                        fillWithPaint(pPixels, mEvent.x, mEvent.y, canvasSideLength, fillColor);
                     }
                 }
-                else
+                else    // Click occurred on tool tray - user wants to change tools or colors
                 {
                     if (mEvent.x < 25)
                     {
-                        pencil = true;
+                        pencil = true; // Switch to pencil
                     }
                     else if (mEvent.x < 50)
                     {
-                        pencil = false; //That is, paintbucket is true
+                        pencil = false; // Switch to paint bucket
                     }
                     else
                     {
@@ -294,33 +341,33 @@ int main(int argc, const char * argv[]) {
                         {
                             if (pencil)
                             {
-                                lineColor = pPixels[(myArrayLength+2)*myArrayLength+mEvent.x+1];
+                                lineColor = pPixels[(canvasSideLength+2)*canvasSideLength+mEvent.x+1];
                             }
                             else
                             {
-                                fillColor = pPixels[(myArrayLength+2)*myArrayLength+mEvent.x+1];
+                                fillColor = pPixels[(canvasSideLength+2)*canvasSideLength+mEvent.x+1];
                             }
                         }
                         else if (mEvent.x % 25 == 0)
                         {
                             if (pencil)
                             {
-                                lineColor = pPixels[(myArrayLength+2)*myArrayLength+mEvent.x-1];
+                                lineColor = pPixels[(canvasSideLength+2)*canvasSideLength+mEvent.x-1];
                             }
                             else
                             {
-                                fillColor = pPixels[(myArrayLength+2)*myArrayLength+mEvent.x-1];
+                                fillColor = pPixels[(canvasSideLength+2)*canvasSideLength+mEvent.x-1];
                             }
                         }
                         else
                         {
                             if (pencil)
                             {
-                                lineColor = pPixels[(myArrayLength+2)*myArrayLength+mEvent.x];
+                                lineColor = pPixels[(canvasSideLength+2)*canvasSideLength+mEvent.x];
                             }
                             else
                             {
-                                fillColor = pPixels[(myArrayLength+2)*myArrayLength+mEvent.x];
+                                fillColor = pPixels[(canvasSideLength+2)*canvasSideLength+mEvent.x];
                             }
                         }
                     }
@@ -328,11 +375,15 @@ int main(int argc, const char * argv[]) {
             }
             else if (event.type == SDL_MOUSEBUTTONUP)
             {
-                if(pencil)
+                if(pencil && buttonPressed)
                 {
                     buttonPressed = false;
                     SDL_MouseButtonEvent mEvent = *(SDL_MouseButtonEvent *)&event;
-                    setPixel(mEvent.x, mEvent.y, pPixels, myArrayLength, pDisplay, lineColor);
+                    setPixel(mEvent.x, mEvent.y, pPixels, canvasSideLength, lineColor);
+                    if (mEvent.x != lastXCoord || mEvent.y != lastYCoord)
+                    {
+                        drawLine(lastXCoord, lastYCoord, mEvent.x, mEvent.y, pPixels, canvasSideLength, lineColor);
+                    }
                 }
             }
             else if (buttonPressed && event.type == SDL_MOUSEMOTION)
@@ -340,11 +391,21 @@ int main(int argc, const char * argv[]) {
                 if(pencil)
                 {
                     SDL_MouseMotionEvent mEvent = *(SDL_MouseMotionEvent *)&event;
-                    setPixel(mEvent.x, mEvent.y, pPixels, myArrayLength, pDisplay, lineColor);
+                    setPixel(mEvent.x, mEvent.y, pPixels, canvasSideLength, lineColor);
+                    if (mEvent.x != lastXCoord || mEvent.y != lastYCoord)
+                    {
+                        drawLine(lastXCoord, lastYCoord, mEvent.x, mEvent.y, pPixels, canvasSideLength, lineColor);
+                        lastXCoord = mEvent.x;
+                        lastYCoord = mEvent.y;
+                    }
                 }
             }
+            SDL_UpdateWindowSurface(pDisplay);
         }
     }
+    
+    
+    // Clean up the surface and window before closing
     
     SDL_FreeSurface(pSurface);
     SDL_DestroyWindow(pDisplay);

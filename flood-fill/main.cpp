@@ -187,9 +187,8 @@ void setPixel(int x_coord, int y_coord, int * pPixels, int len, int lineColor)
     int yEnd = std::min(len-1, y_coord+1);
     int yStart = std::max(y_coord-1, 0);
     
-    std::cout << xStart << ", " << yStart << "\n";
-    
-    // Fill in the box with the line color
+    // Fill in the box with the line color; off-grid coordinates will result in no drawing because they
+    // make xStart greater than xEnd (for an off-x) or yStart greater than yEnd (for an off-y)
     
     for(int x = xStart; x <= xEnd; x++)
     {

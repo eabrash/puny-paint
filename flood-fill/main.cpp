@@ -366,9 +366,9 @@ int main(int argc, const char * argv[]) {
     giveFocus(toolFocusX, pPixels, canvasSideLength);
     
     int fillColor = 0x00ffffff;
-    int fillColorFocusX = 250;
+    int fillColorFocusX = 250; //Position of starting fill color swatch (white)
     int lineColor = 0x00000000;
-    int lineColorFocusX = 200;
+    int lineColorFocusX = 200; //Position of starting line color swatch (black)
     giveFocus(lineColorFocusX, pPixels, canvasSideLength);
     
     int lastXCoord = 0;

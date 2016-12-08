@@ -206,22 +206,24 @@ void setPixel(int x_coord, int y_coord, int * pPixels, int len, SDL_Window * win
     
     // Update only the rectangle of the screen that has been drawn to
     
-    SDL_Rect rects[1];
-    SDL_Rect rect;
-    rect.x = xStart;
-    rect.y = yStart;
-    rect.w = 3;
-    rect.h = 3;
-    rects[0] = rect;
-    
-    SDL_UpdateWindowSurfaceRects(window, rects, 1);
+//    SDL_Rect rects[1];
+//    SDL_Rect rect;
+//    rect.x = xStart;
+//    rect.y = yStart;
+//    rect.w = 3;
+//    rect.h = 3;
+//    rects[0] = rect;
+//    
+//    SDL_UpdateWindowSurfaceRects(window, rects, 1);
 }
 
 void drawLine(int lastXCoord, int lastYCoord, int currentXCoord, int currentYCoord, int *pPixels, int len, SDL_Window *window, int lineColor)
 {
-    float slope;
-    float intercept;
+    float slope = 0;
+    float intercept = 0;
     bool isVertical = true;
+    
+    // Get slope and intercept if line defined by input points is non-vertical (vertical = undefined slope)
     
     if (currentXCoord - lastXCoord != 0)
     {
@@ -229,66 +231,28 @@ void drawLine(int lastXCoord, int lastYCoord, int currentXCoord, int currentYCoo
         intercept = currentYCoord-(slope*currentXCoord);
         isVertical = false;
     }
-    
-    if (!isVertical)
-    {
-        std::cout << "SLOPE" << slope << "\n";
-    }
-    else
-    {
-        std::cout << "Vertical";
-    }
 
-    if (isVertical) // Need to draw a vertical line (slope is undefined)
+    if (isVertical) // Draw a vertical line (slope is undefined)
     {
-        std::cout << "VERTICAL \n";
         for (int y = std::min(lastYCoord, currentYCoord) + 1; y < std::max(currentYCoord, lastYCoord); y++)
         {
             setPixel(currentXCoord, y, pPixels, len, window, lineColor);
         }
     }
-    else if (slope >= 1)
+    else if (slope >= 1 || slope <= -1) // Need to go through each y pixel and draw corresponding x
     {
-        std::cout << "POSITIVE SLOPE > 1\n";
         for (int y = std::min(currentYCoord, lastYCoord) + 1; y < std::max(lastYCoord, currentYCoord); y++)
         {
             int x = round((y-intercept)/slope);
             setPixel(x, y, pPixels, len, window, lineColor);
         }
     }
-    else if (slope <= -1)
+    else    // Need to go through each x pixel and draw corresponding y
     {
-        std::cout << "NEGATIVE SLOPE < -1\n";
-        for (int y = std::min(currentYCoord, lastYCoord) + 1; y < std::max(lastYCoord, currentYCoord); y++)
-        {
-            int x = round((y-intercept)/slope);
-            setPixel(x, y, pPixels, len, window, lineColor);
-        }
-    }
-    else if (slope > 0 && slope < 1)
-    {
-        std::cout << "POSITIVE SLOPE < 1\n";
         for (int x = std::min(currentXCoord, lastXCoord) + 1; x <= std::max(currentXCoord, lastXCoord); x++)
         {
             int y = round(slope * x + intercept);
             setPixel(x, y, pPixels, len, window, lineColor);
-        }
-    }
-    else if (slope > -1 && slope < 0)
-    {
-        std::cout << "NEGATIVE SLOPE < 1 \n";
-        for (int x = std::min(lastXCoord, currentXCoord) + 1; x <= std::max(lastXCoord, currentXCoord); x++)
-        {
-            int y = round(slope * x + intercept);
-            setPixel(x, y, pPixels, len, window, lineColor);
-        }
-    }
-    else if (slope == 0 || slope == -0)
-    {
-        std::cout << "HORIZONTAL\n";
-        for (int x = std::min(lastXCoord, currentXCoord) + 1; x <= std::max(currentXCoord, lastXCoord); x++)
-        {
-            setPixel(x, currentYCoord, pPixels, len, window, lineColor);
         }
     }
 }
@@ -370,7 +334,6 @@ int main(int argc, const char * argv[]) {
                     else
                     {
                         fillWithPaint(pPixels, mEvent.x, mEvent.y, canvasSideLength, fillColor);
-                        SDL_UpdateWindowSurface(pDisplay);
                     }
                 }
                 else    // Click occurred on tool tray - user wants to change tools or colors
@@ -448,6 +411,7 @@ int main(int argc, const char * argv[]) {
                     }
                 }
             }
+            SDL_UpdateWindowSurface(pDisplay);
         }
     }
     

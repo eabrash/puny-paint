@@ -45,7 +45,7 @@ void floodfill(int *pPixels, int y, int x, int len, int original_color, int new_
     }
 }
 
-// Wrapper for recursive flood-fill algorithm (sets initial color)
+// Wrapper for recursive flood-fill algorithm (identifies and sets initial color)
 
 void fillWithPaint(int *pPixels, int x, int y, int len, int new_color)
 {
@@ -53,7 +53,7 @@ void fillWithPaint(int *pPixels, int x, int y, int len, int new_color)
     floodfill(pPixels, y, x, len, original_color, new_color);
 }
 
-// Set all pixels to white to make a new drawing canvas
+// Give all pixels a color of white to make a new drawing canvas
 
 void drawBackground(int *pPixels, int len)
 {
@@ -69,9 +69,11 @@ void drawBackground(int *pPixels, int len)
     
 }
 
+// Load tool selectors and color swatches
+
 void drawTools(int *pPixelsStart, int len)
 {
-    // Load "postage stamp" PNG images representing tools and color options
+    // Load small PNG images representing tools and color options
     
     SDL_Surface* pBrushIcon = IMG_Load("../../../../../../../../Documents/puny-paint/resources/brush.png");
     SDL_Surface* pBucketIcon = IMG_Load("../../../../../../../../Documents/puny-paint/resources/paintbucket.png");
@@ -90,7 +92,7 @@ void drawTools(int *pPixelsStart, int len)
     SDL_Surface* pRaspberry = IMG_Load("../../../../../../../../Documents/puny-paint/resources/raspberry.png");
     SDL_Surface* pMidnightBlue = IMG_Load("../../../../../../../../Documents/puny-paint/resources/midnight_blue.png");
     
-    // For each image, get a pointer to its pixel array
+    // For each small loaded image, get a pointer to its pixel array
     
     int *brush = (int *)pBrushIcon->pixels;
     int *bucket = (int *)pBucketIcon->pixels;
@@ -109,7 +111,7 @@ void drawTools(int *pPixelsStart, int len)
     int *raspberry = (int *)pRaspberry->pixels;
     int *midnightBlue = (int *)pMidnightBlue->pixels;
     
-    // Draw each tool or color's "postage stamp" in the tray at the bottom of the screen
+    // Draw each tool or color's "postage stamp" to the reigon of the tray at the bottom of the window
     
     for (int i = 0; i < 25; i++)
     {
@@ -185,7 +187,7 @@ void drawTools(int *pPixelsStart, int len)
 
 // Draw a 3px by 3px dot when the user clicks
 
-void setPixel(int x_coord, int y_coord, int * pPixels, int len, SDL_Window * window, int lineColor)
+void setPixel(int x_coord, int y_coord, int * pPixels, int len, int lineColor)
 {
     // Define the box that will be filled by the click (may be smaller than 3px by 3px if at canvas edge)
     
@@ -203,66 +205,51 @@ void setPixel(int x_coord, int y_coord, int * pPixels, int len, SDL_Window * win
             *(pPixels+(y)*len+(x))=lineColor;
         }
     }
-    
-    // Update only the rectangle of the screen that has been drawn to
-    
-//    SDL_Rect rects[1];
-//    SDL_Rect rect;
-//    rect.x = xStart;
-//    rect.y = yStart;
-//    rect.w = 3;
-//    rect.h = 3;
-//    rects[0] = rect;
-//    
-//    SDL_UpdateWindowSurfaceRects(window, rects, 1);
 }
 
-void drawLine(int lastXCoord, int lastYCoord, int currentXCoord, int currentYCoord, int *pPixels, int len, SDL_Window *window, int lineColor)
-{
-    float slope = 0;
-    float intercept = 0;
-    bool isVertical = true;
-    
-    // Get slope and intercept if line defined by input points is non-vertical (vertical = undefined slope)
-    
-    if (currentXCoord - lastXCoord != 0)
-    {
-        slope = float((currentYCoord - lastYCoord))/float((currentXCoord - lastXCoord));
-        intercept = currentYCoord-(slope*currentXCoord);
-        isVertical = false;
-    }
+// Draw a line between two points, using the pixel array pointer
 
+void drawLine(int lastXCoord, int lastYCoord, int currentXCoord, int currentYCoord, int *pPixels, int len, int lineColor)
+{
+    bool isVertical = currentXCoord - lastXCoord == 0;
+    
     if (isVertical) // Draw a vertical line (slope is undefined)
     {
         for (int y = std::min(lastYCoord, currentYCoord) + 1; y < std::max(currentYCoord, lastYCoord); y++)
         {
-            setPixel(currentXCoord, y, pPixels, len, window, lineColor);
+            setPixel(currentXCoord, y, pPixels, len, lineColor);
         }
     }
-    else if (slope >= 1 || slope <= -1) // Need to go through each y pixel and draw corresponding x
+    else    // Determine slope and intercept of line and use to color in the appropriate set of pixels
     {
-        for (int y = std::min(currentYCoord, lastYCoord) + 1; y < std::max(lastYCoord, currentYCoord); y++)
-        {
-            int x = round((y-intercept)/slope);
-            setPixel(x, y, pPixels, len, window, lineColor);
+        float slope = float((currentYCoord - lastYCoord))/float((currentXCoord - lastXCoord));
+        float intercept = currentYCoord-(slope*currentXCoord);
+        
+        if (slope >= 1 || slope <= -1) // Need to go through each y pixel and draw corresponding x
+            {
+            for (int y = std::min(currentYCoord, lastYCoord) + 1; y < std::max(lastYCoord, currentYCoord); y++)
+            {
+                int x = round((y-intercept)/slope);
+                setPixel(x, y, pPixels, len, lineColor);
+            }
         }
-    }
-    else    // Need to go through each x pixel and draw corresponding y
-    {
-        for (int x = std::min(currentXCoord, lastXCoord) + 1; x <= std::max(currentXCoord, lastXCoord); x++)
+        else    // Need to go through each x pixel and draw corresponding y
         {
-            int y = round(slope * x + intercept);
-            setPixel(x, y, pPixels, len, window, lineColor);
+            for (int x = std::min(currentXCoord, lastXCoord) + 1; x <= std::max(currentXCoord, lastXCoord); x++)
+            {
+                int y = round(slope * x + intercept);
+                setPixel(x, y, pPixels, len, lineColor);
+            }
         }
     }
 }
 
 
-// Main program loop - sets up the new canvas and detects and handles user events
+// Main program loop - sets up the canvas and detects and handles user events
 
 int main(int argc, const char * argv[]) {
     
-    int canvasSideLength = 400;        // Side length of canvas - canvas is square
+    int canvasSideLength = 400;     // Side length of canvas - canvas is square
     
     SDL_Window *pDisplay = NULL;    // Initialize pointers to be null (thanks to Michael Gray for this tip)
     SDL_Surface *pSurface = NULL;
@@ -326,7 +313,7 @@ int main(int argc, const char * argv[]) {
                 {
                     if(pencil)
                     {
-                        setPixel(mEvent.x, mEvent.y, pPixels, canvasSideLength, pDisplay, lineColor);
+                        setPixel(mEvent.x, mEvent.y, pPixels, canvasSideLength, lineColor);
                         buttonPressed = true;
                         lastXCoord = mEvent.x;
                         lastYCoord = mEvent.y;
@@ -390,10 +377,10 @@ int main(int argc, const char * argv[]) {
                 {
                     buttonPressed = false;
                     SDL_MouseButtonEvent mEvent = *(SDL_MouseButtonEvent *)&event;
-                    setPixel(mEvent.x, mEvent.y, pPixels, canvasSideLength, pDisplay, lineColor);
+                    setPixel(mEvent.x, mEvent.y, pPixels, canvasSideLength, lineColor);
                     if (mEvent.x != lastXCoord || mEvent.y != lastYCoord)
                     {
-                        drawLine(lastXCoord, lastYCoord, mEvent.x, mEvent.y, pPixels, canvasSideLength, pDisplay,lineColor);
+                        drawLine(lastXCoord, lastYCoord, mEvent.x, mEvent.y, pPixels, canvasSideLength, lineColor);
                     }
                 }
             }
@@ -402,10 +389,10 @@ int main(int argc, const char * argv[]) {
                 if(pencil)
                 {
                     SDL_MouseMotionEvent mEvent = *(SDL_MouseMotionEvent *)&event;
-                    setPixel(mEvent.x, mEvent.y, pPixels, canvasSideLength, pDisplay, lineColor);
+                    setPixel(mEvent.x, mEvent.y, pPixels, canvasSideLength, lineColor);
                     if (mEvent.x != lastXCoord || mEvent.y != lastYCoord)
                     {
-                        drawLine(lastXCoord, lastYCoord, mEvent.x, mEvent.y, pPixels, canvasSideLength, pDisplay,lineColor);
+                        drawLine(lastXCoord, lastYCoord, mEvent.x, mEvent.y, pPixels, canvasSideLength, lineColor);
                         lastXCoord = mEvent.x;
                         lastYCoord = mEvent.y;
                     }

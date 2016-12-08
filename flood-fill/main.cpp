@@ -12,7 +12,7 @@
 #include <iostream>
 #include <sstream>
 
-// Recursive flood-fill algorithm (depth-first traversal)
+// Recursive flood-fill algorithm
 
 void floodfill(int *pPixels, int y, int x, int len, int original_color, int new_color)
 {
@@ -292,9 +292,11 @@ int main(int argc, const char * argv[]) {
     bool running = true;
     
     bool buttonPressed = false;
-    bool pencil = true;     // When pencil is false, that means the user has toggled to the paint bucket
+    bool pencil = true;     // When pencil is false, program is in paintbucket mode
+    
     int fillColor = 0x00ffffff;
     int lineColor = 0x00000000;
+    
     int lastXCoord;
     int lastYCoord;
     

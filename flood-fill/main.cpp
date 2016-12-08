@@ -187,6 +187,8 @@ void setPixel(int x_coord, int y_coord, int * pPixels, int len, int lineColor)
     int yEnd = std::min(len-1, y_coord+1);
     int yStart = std::max(y_coord-1, 0);
     
+    std::cout << xStart << ", " << yStart << "\n";
+    
     // Fill in the box with the line color
     
     for(int x = xStart; x <= xEnd; x++)
@@ -203,6 +205,7 @@ void setPixel(int x_coord, int y_coord, int * pPixels, int len, int lineColor)
 
 void drawLine(int lastXCoord, int lastYCoord, int currentXCoord, int currentYCoord, int *pPixels, int len, int lineColor)
 {
+//    std::cout << currentXCoord << ", " << currentYCoord << "\n";
     bool isVertical = currentXCoord - lastXCoord == 0;
     
     if (isVertical) // Draw a vertical line (slope is undefined)
@@ -223,6 +226,7 @@ void drawLine(int lastXCoord, int lastYCoord, int currentXCoord, int currentYCoo
             {
                 int x = round((y-intercept)/slope);
                 setPixel(x, y, pPixels, len, lineColor);
+//                std::cout << "Coloring: " << x << ", " << y << "\n";
             }
         }
         else    // Need to go through each x pixel and draw corresponding y
@@ -231,6 +235,7 @@ void drawLine(int lastXCoord, int lastYCoord, int currentXCoord, int currentYCoo
             {
                 int y = round(slope * x + intercept);
                 setPixel(x, y, pPixels, len, lineColor);
+//                std::cout << "Coloring: " << x << ", " << y << "\n";
             }
         }
     }
@@ -391,7 +396,6 @@ int main(int argc, const char * argv[]) {
                 drawLine(lastXCoord, lastYCoord, mEvent.x, mEvent.y, pPixels, canvasSideLength, lineColor);
                 lastXCoord = mEvent.x;
                 lastYCoord = mEvent.y;
-//                std::cout << mEvent.x << ", " << mEvent.y << "\n";
             }
             SDL_UpdateWindowSurface(pDisplay);
         }

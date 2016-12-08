@@ -368,8 +368,8 @@ int main(int argc, const char * argv[]) {
     int fillColor = 0x00ffffff;
     int fillColorFocusX = 250;
     int lineColor = 0x00000000;
-    int fillLineFocusX = 200;
-    giveFocus(fillLineFocusX, pPixels, canvasSideLength);
+    int lineColorFocusX = 200;
+    giveFocus(lineColorFocusX, pPixels, canvasSideLength);
     
     int lastXCoord = 0;
     int lastYCoord = 0;
@@ -394,8 +394,6 @@ int main(int argc, const char * argv[]) {
                         SDL_CaptureMouse(SDL_TRUE); // Allows tracking of mouse outside of window
                         lastXCoord = mEvent.x;
                         lastYCoord = mEvent.y;
-                        removeFocus(25, pPixels, canvasSideLength);
-                        toolFocusX = 25;
                     }
                     else
                     {
@@ -407,20 +405,37 @@ int main(int argc, const char * argv[]) {
                     if (mEvent.x < 25)
                     {
                         pencil = true; // Switch to pencil
+                        removeFocus(toolFocusX, pPixels, canvasSideLength);
+                        toolFocusX = 0;
+                        giveFocus(toolFocusX, pPixels, canvasSideLength);
+                        removeFocus(fillColorFocusX, pPixels, canvasSideLength);
+                        giveFocus(lineColorFocusX, pPixels, canvasSideLength);
+                        
                     }
                     else if (mEvent.x < 50)
                     {
                         pencil = false; // Switch to paint bucket
+                        removeFocus(toolFocusX, pPixels, canvasSideLength);
+                        toolFocusX = 25;
+                        giveFocus(toolFocusX, pPixels, canvasSideLength);
+                        removeFocus(lineColorFocusX, pPixels, canvasSideLength);
+                        giveFocus(fillColorFocusX, pPixels, canvasSideLength);
                     }
                     else
                     {
                         if (pencil)
                         {
                             lineColor = setColor(mEvent, pPixels, canvasSideLength);
+                            removeFocus(lineColorFocusX, pPixels, canvasSideLength);
+                            lineColorFocusX = mEvent.x - mEvent.x % 25;
+                            giveFocus(lineColorFocusX, pPixels, canvasSideLength);
                         }
                         else
                         {
                             fillColor = setColor(mEvent, pPixels, canvasSideLength);
+                            removeFocus(fillColorFocusX, pPixels, canvasSideLength);
+                            fillColorFocusX = mEvent.x - mEvent.x % 25;
+                            giveFocus(fillColorFocusX, pPixels, canvasSideLength);
                         }
                     }
                 }

@@ -185,7 +185,7 @@ void drawTools(int *pPixelsStart, int len)
     }
 }
 
-// Draw a 3px by 3px dot when the user clicks
+// Draw a 3 by 3 dot when the user clicks
 
 void setPixel(int x_coord, int y_coord, int * pPixels, int len, int lineColor)
 {
@@ -241,6 +241,24 @@ void drawLine(int lastXCoord, int lastYCoord, int currentXCoord, int currentYCoo
                 setPixel(x, y, pPixels, len, lineColor);
             }
         }
+    }
+}
+
+// Set color based on position of user's click on palette
+
+int setColor (SDL_MouseButtonEvent mEvent, int *pPixels, int canvasSideLength)
+{
+    if (mEvent.x % 25 == 0) // Click is on gray vertical line between color swatches
+    {
+        return pPixels[(canvasSideLength+2)*canvasSideLength+mEvent.x+1];
+    }
+    else if (mEvent.y % 25 == 0) // Click is on the gray horizontal line above/below swatches
+    {
+        return pPixels[(canvasSideLength+2)*canvasSideLength+mEvent.x-1];
+    }
+    else   // Click is on a swatch
+    {
+        return pPixels[(canvasSideLength+2)*canvasSideLength+mEvent.x];
     }
 }
 
@@ -337,38 +355,13 @@ int main(int argc, const char * argv[]) {
                     }
                     else
                     {
-                        if (mEvent.x % 25 == 0)
+                        if (pencil)
                         {
-                            if (pencil)
-                            {
-                                lineColor = pPixels[(canvasSideLength+2)*canvasSideLength+mEvent.x+1];
-                            }
-                            else
-                            {
-                                fillColor = pPixels[(canvasSideLength+2)*canvasSideLength+mEvent.x+1];
-                            }
-                        }
-                        else if (mEvent.x % 25 == 0)
-                        {
-                            if (pencil)
-                            {
-                                lineColor = pPixels[(canvasSideLength+2)*canvasSideLength+mEvent.x-1];
-                            }
-                            else
-                            {
-                                fillColor = pPixels[(canvasSideLength+2)*canvasSideLength+mEvent.x-1];
-                            }
+                            lineColor = setColor(mEvent, pPixels, canvasSideLength);
                         }
                         else
                         {
-                            if (pencil)
-                            {
-                                lineColor = pPixels[(canvasSideLength+2)*canvasSideLength+mEvent.x];
-                            }
-                            else
-                            {
-                                fillColor = pPixels[(canvasSideLength+2)*canvasSideLength+mEvent.x];
-                            }
+                            fillColor = setColor(mEvent, pPixels, canvasSideLength);
                         }
                     }
                 }

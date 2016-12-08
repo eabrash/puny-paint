@@ -100,76 +100,17 @@ void drawTools(int *pPixelsStart, int len)
     int *brown = (int *)pBrown->pixels;
     int *raspberry = (int *)pRaspberry->pixels;
     int *midnightBlue = (int *)pMidnightBlue->pixels;
+
+    int *tooltray[16] = {brush, bucket, red, orange, yellow, green, blue, purple, black, gray, white, pink, sand, brown, raspberry, midnightBlue};
     
-    // Draw each tool or color's "postage stamp" to the reigon of the tray at the bottom of the window
-    
-    for (int i = 0; i < 25; i++)
+    // Draw each tool or color's "postage stamp" to the region of the tray at the bottom of the window
+    for (int tile = 0; tile < 16; tile++)
     {
-        for (int j = 0; j < len; j++)
+        for (int x = 0; x < 25; x++)
         {
-            if (j < 25)
+            for (int y = 0; y < 25; y++)
             {
-                pPixelsStart[(len+i)*len+j] = brush[i*25+j];
-            }
-            else if (j < 50)
-            {
-                pPixelsStart[(len+i)*len+j] = bucket[i*25+j-25];
-            }
-            else if (j < 75)
-            {
-                pPixelsStart[(len+i)*len+j] = red[i*25+j-50];
-            }
-            else if (j < 100)
-            {
-                pPixelsStart[(len+i)*len+j] = orange[i*25+j-75];
-            }
-            else if (j < 125)
-            {
-                pPixelsStart[(len+i)*len+j] = yellow[i*25+j-100];
-            }
-            else if (j < 150)
-            {
-                pPixelsStart[(len+i)*len+j] = green[i*25+j-125];
-            }
-            else if (j < 175)
-            {
-                pPixelsStart[(len+i)*len+j] = blue[i*25+j-150];
-            }
-            else if (j < 200)
-            {
-                pPixelsStart[(len+i)*len+j] = purple[i*25+j-175];
-            }
-            else if (j < 225)
-            {
-                pPixelsStart[(len+i)*len+j] = black[i*25+j-200];
-            }
-            else if (j < 250)
-            {
-                pPixelsStart[(len+i)*len+j] = gray[i*25+j-225];
-            }
-            else if (j < 275)
-            {
-                pPixelsStart[(len+i)*len+j] = white[i*25+j-250];
-            }
-            else if (j < 300)
-            {
-                pPixelsStart[(len+i)*len+j] = pink[i*25+j-275];
-            }
-            else if (j < 325)
-            {
-                pPixelsStart[(len+i)*len+j] = sand[i*25+j-300];
-            }
-            else if (j < 350)
-            {
-                pPixelsStart[(len+i)*len+j] = brown[i*25+j-325];
-            }
-            else if (j < 375)
-            {
-                pPixelsStart[(len+i)*len+j] = raspberry[i*25+j-350];
-            }
-            else
-            {
-                pPixelsStart[(len+i)*len+j] = midnightBlue[i*25+j-375];
+                pPixelsStart[(len+y)*len+x+25*tile] = tooltray[tile][y*25+x];
             }
         }
     }
@@ -245,31 +186,28 @@ void drawLine(int lastXCoord, int lastYCoord, int currentXCoord, int currentYCoo
 
 void floodfill(int *pPixels, int y, int x, int len, int original_color, int new_color)
 {
-    if (original_color != new_color)
+    if (*(pPixels+(y*len)+x) == original_color)
     {
-        if (*(pPixels+(y*len)+x) == original_color)
+        *(pPixels+(y*len)+x) = new_color;
+        
+        if (y+1 < len)
         {
-            *(pPixels+(y*len)+x) = new_color;
-            
-            if (y+1 < len)
-            {
-                floodfill(pPixels, y+1, x, len, original_color, new_color);
-            }
-            
-            if (y-1 >= 0)
-            {
-                floodfill(pPixels, y-1, x, len, original_color, new_color);
-            }
-            
-            if (x+1 < len)
-            {
-                floodfill(pPixels, y, x+1, len, original_color, new_color);
-            }
-            
-            if (x-1 >= 0)
-            {
-                floodfill(pPixels, y, x-1, len, original_color, new_color);
-            }
+            floodfill(pPixels, y+1, x, len, original_color, new_color);
+        }
+        
+        if (y-1 >= 0)
+        {
+            floodfill(pPixels, y-1, x, len, original_color, new_color);
+        }
+        
+        if (x+1 < len)
+        {
+            floodfill(pPixels, y, x+1, len, original_color, new_color);
+        }
+        
+        if (x-1 >= 0)
+        {
+            floodfill(pPixels, y, x-1, len, original_color, new_color);
         }
     }
 }
@@ -280,7 +218,11 @@ void floodfill(int *pPixels, int y, int x, int len, int original_color, int new_
 void fillWithPaint(int *pPixels, int x, int y, int len, int new_color)
 {
     int original_color = *(pPixels+(y*len)+x);
-    floodfill(pPixels, y, x, len, original_color, new_color);
+    
+    if (original_color != new_color)
+    {
+        floodfill(pPixels, y, x, len, original_color, new_color);
+    }
 }
 
 
@@ -296,7 +238,7 @@ int setColor (SDL_MouseButtonEvent mEvent, int *pPixels, int canvasSideLength)
     {
         return pPixels[(canvasSideLength+2)*canvasSideLength+mEvent.x-1];
     }
-    else   // Click is on a swatch
+    else   // Click is directly on colored portion of a swatch
     {
         return pPixels[(canvasSideLength+2)*canvasSideLength+mEvent.x];
     }
@@ -355,24 +297,40 @@ int main(int argc, const char * argv[]) {
     drawTools(pPixels, canvasSideLength);
     SDL_UpdateWindowSurface(pDisplay);
     
+    // Define helpful coordinates for tool setting
+    
+    const int WHITE_POS = 250;
+    const int BLACK_POS = 200;
+    const int PENCIL_POS = 0;
+    const int BUCKET_POS = 25;
+    const int TILE_WIDTH = 25;
+
+    // Set up the program with the tool on pencil and give focus to pencil
+    
+    bool buttonPressed = false;
+    bool pencil = true;
+    int toolFocusX = PENCIL_POS;
+    giveFocus(toolFocusX, pPixels, canvasSideLength);
+    
+    
+    // Set up the initial fill color (white) and line color (black) and give focus to the line color
+    
+    int fillColor = 0x00ffffff;
+    int fillColorFocusX = WHITE_POS; //Position of starting fill color swatch (white)
+    int lineColor = 0x00000000;
+    int lineColorFocusX = BLACK_POS; //Position of starting line color swatch (black)
+    giveFocus(lineColorFocusX, pPixels, canvasSideLength);
+    
+    
+    // Initialize  variables that will hold the last X and Y coord (to draw lines between points)
+    
+    int lastXCoord = 0;
+    int lastYCoord = 0;
+    
     // Event handling loop (below) based on Lazy Foo SDL Tutorial 03
     
     SDL_Event event;
     bool running = true;
-    
-    bool buttonPressed = false;
-    bool pencil = true;     // When pencil is false, program is in paintbucket mode
-    int toolFocusX = 0;
-    giveFocus(toolFocusX, pPixels, canvasSideLength);
-    
-    int fillColor = 0x00ffffff;
-    int fillColorFocusX = 250; //Position of starting fill color swatch (white)
-    int lineColor = 0x00000000;
-    int lineColorFocusX = 200; //Position of starting line color swatch (black)
-    giveFocus(lineColorFocusX, pPixels, canvasSideLength);
-    
-    int lastXCoord = 0;
-    int lastYCoord = 0;
     
     while (running)
     {
@@ -402,21 +360,21 @@ int main(int argc, const char * argv[]) {
                 }
                 else    // Click occurred on tool tray - user wants to change tools or colors
                 {
-                    if (mEvent.x < 25)
+                    if (mEvent.x < PENCIL_POS + TILE_WIDTH) // User clicked on pencil
                     {
-                        pencil = true; // Switch to pencil
+                        pencil = true;
                         removeFocus(toolFocusX, pPixels, canvasSideLength);
-                        toolFocusX = 0;
+                        toolFocusX = PENCIL_POS;
                         giveFocus(toolFocusX, pPixels, canvasSideLength);
                         removeFocus(fillColorFocusX, pPixels, canvasSideLength);
                         giveFocus(lineColorFocusX, pPixels, canvasSideLength);
                         
                     }
-                    else if (mEvent.x < 50)
+                    else if (mEvent.x < BUCKET_POS + TILE_WIDTH) // User clicked on paint bucket
                     {
-                        pencil = false; // Switch to paint bucket
+                        pencil = false;
                         removeFocus(toolFocusX, pPixels, canvasSideLength);
-                        toolFocusX = 25;
+                        toolFocusX = BUCKET_POS;
                         giveFocus(toolFocusX, pPixels, canvasSideLength);
                         removeFocus(lineColorFocusX, pPixels, canvasSideLength);
                         giveFocus(fillColorFocusX, pPixels, canvasSideLength);
@@ -427,14 +385,14 @@ int main(int argc, const char * argv[]) {
                         {
                             lineColor = setColor(mEvent, pPixels, canvasSideLength);
                             removeFocus(lineColorFocusX, pPixels, canvasSideLength);
-                            lineColorFocusX = mEvent.x - mEvent.x % 25;
+                            lineColorFocusX = mEvent.x - mEvent.x % TILE_WIDTH;
                             giveFocus(lineColorFocusX, pPixels, canvasSideLength);
                         }
                         else
                         {
                             fillColor = setColor(mEvent, pPixels, canvasSideLength);
                             removeFocus(fillColorFocusX, pPixels, canvasSideLength);
-                            fillColorFocusX = mEvent.x - mEvent.x % 25;
+                            fillColorFocusX = mEvent.x - mEvent.x % TILE_WIDTH;
                             giveFocus(fillColorFocusX, pPixels, canvasSideLength);
                         }
                     }

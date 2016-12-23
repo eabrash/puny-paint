@@ -28,7 +28,6 @@ There is a lot that PunyPaint doesn't do...yet!
 
 [TODO] Known issues/upcoming tasks:
 * Add undo functionality
-* Highlight current tool and color selection
 * Allow zooming in and out
 * Add copy/paste functionality
 * Add save functionality
